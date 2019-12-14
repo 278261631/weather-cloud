@@ -1,40 +1,94 @@
 <template>
   <div class="hello">
     <h1>{{ msg }}</h1>
-    <p>
-      For a guide and recipes on how to configure / customize this project,<br>
-      check out the
-      <a href="https://cli.vuejs.org" target="_blank" rel="noopener">vue-cli documentation</a>.
-    </p>
-    <h3>Installed CLI Plugins</h3>
-    <ul>
-      <li><a href="https://github.com/vuejs/vue-cli/tree/dev/packages/%40vue/cli-plugin-babel" target="_blank" rel="noopener">babel</a></li>
-      <li><a href="https://github.com/vuejs/vue-cli/tree/dev/packages/%40vue/cli-plugin-eslint" target="_blank" rel="noopener">eslint</a></li>
-    </ul>
-    <h3>Essential Links</h3>
-    <ul>
-      <li><a href="https://vuejs.org" target="_blank" rel="noopener">Core Docs</a></li>
-      <li><a href="https://forum.vuejs.org" target="_blank" rel="noopener">Forum</a></li>
-      <li><a href="https://chat.vuejs.org" target="_blank" rel="noopener">Community Chat</a></li>
-      <li><a href="https://twitter.com/vuejs" target="_blank" rel="noopener">Twitter</a></li>
-      <li><a href="https://news.vuejs.org" target="_blank" rel="noopener">News</a></li>
-    </ul>
-    <h3>Ecosystem</h3>
-    <ul>
-      <li><a href="https://router.vuejs.org" target="_blank" rel="noopener">vue-router</a></li>
-      <li><a href="https://vuex.vuejs.org" target="_blank" rel="noopener">vuex</a></li>
-      <li><a href="https://github.com/vuejs/vue-devtools#vue-devtools" target="_blank" rel="noopener">vue-devtools</a></li>
-      <li><a href="https://vue-loader.vuejs.org" target="_blank" rel="noopener">vue-loader</a></li>
-      <li><a href="https://github.com/vuejs/awesome-vue" target="_blank" rel="noopener">awesome-vue</a></li>
-    </ul>
+    <canvas id="targetImg" width="300" height="300" />
+    <div id="label-container"></div>
   </div>
 </template>
 
 <script>
+// import {timer} from 'vue-timers'
+import * as  tmImage from '@teachablemachine/image'
+
+
+      // const URL = "https://teachablemachine.withgoogle.com/models/kJCGpkml/"
+      const URL = "/"
+
+      let model=''
+      let labelContainer=''
+      let maxPredictions=''
+    async function initModel() {
+      const modelURL = URL + "model.json";
+      const metadataURL = URL + "metadata.json";
+
+      model = await tmImage.load(modelURL, metadataURL);
+      maxPredictions = model.getTotalClasses();
+      labelContainer = document.getElementById("label-container");
+      for (let i = 0; i < maxPredictions; i++) { // and class labels
+      labelContainer.appendChild(document.createElement("div"));
+      }
+    }
+
+
+    async function predict() {
+        window.console.log('predict-----')
+        var cavT = document.getElementById('targetImg');
+        const prediction = await model.predict(cavT);
+        for (let i = 0; i < maxPredictions; i++) {
+            const classPrediction =
+                prediction[i].className + ": " + prediction[i].probability.toFixed(2);
+            labelContainer.childNodes[i].innerHTML = classPrediction;
+        }
+    }
+
 export default {
+  // timers:[
+  //   timer('log',5000,{autostart:true})
+  // ],
   name: 'HelloWorld',
   props: {
     msg: String
+  },
+  data(){
+    return{
+      timer:''  ,
+      
+    }
+  },
+  method:{
+    log(){
+      // this.msg = 'xxxx'
+      window.console.log('--log-')
+      // alert('--')
+    },
+
+  },
+  created(){
+     // this.timer = setInterval(this.log , 5000)
+    window.console.log('-created-')
+    //this.log()
+    // log()
+
+  },
+  async mounted(){
+    window.console.log(this)
+    // var that = this
+     await initModel()
+    // this.log()
+    this.timer = setInterval(async function(){
+      // window.console.log('mounted-----')
+      var cav1=document.getElementById('targetImg')
+      var ctx1=cav1.getContext('2d')
+      var bgImg=document.getElementById('timg')
+      ctx1.drawImage(bgImg,0,0,300,300)
+      await predict()
+      // this.log()
+      window.console.log('------p=======')
+    } , 2000)
+    // this.log()
+  },
+  beforeDestroy(){
+    clearInterval(this.timer)
   }
 }
 </script>
