@@ -1,6 +1,5 @@
 <template>
   <div class="hello">
-    <h1>{{ msg }}</h1>
     <canvas id="targetImg" width="300" height="300" />
     <div id="label-container"></div>
   </div>
